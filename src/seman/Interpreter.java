@@ -49,7 +49,7 @@ public class Interpreter {
 			throw new Exception("not begin");
 		}else {
 			
-			states.add(mem.toString());
+//			states.add(mem.toString());
 			
 			while(true) {
 				index++;
@@ -81,6 +81,9 @@ public class Interpreter {
 
 		if(tag == TokenTag.VAR) {
 			var(t, mem);
+			
+			states.add(overlay(mem, parentMem).toString());
+			
 		}else
 			if(tag == TokenTag.IF) {
 			conditional(t, mem, parentMem);
@@ -97,6 +100,7 @@ public class Interpreter {
 			loopWhile(t, mem, parentMem);
 		}else if(tag == TokenTag.EXP) {
 			exp(t, mem, parentMem);
+			states.add(overlay(mem, parentMem).toString());
 		}else {		
 			throw new Exception("no func " +  t.tag);
 		}
@@ -153,8 +157,6 @@ public class Interpreter {
 		}
 		
 		
-		states.add(mem.toString());
-		
 	}
 	
 	private void var(Token t, Map<String, Integer> mem) throws Exception {
@@ -169,9 +171,7 @@ public class Interpreter {
 		}else {
 			throw new Exception("busted");
 		}
-		
-		
-		states.add(mem.toString());
+
 	}
 
 	private void loopWhile(Token t, Map<String, Integer> mem, Map<String, Integer> parentMem) throws Exception {
@@ -324,5 +324,21 @@ public class Interpreter {
 		
 	}
 
+	private Map<String, Integer> overlay(Map<String, Integer> m1, Map<String, Integer> m2){
+		Map<String, Integer> over = new HashMap<String, Integer>();
+		
+		for(String key : m1.keySet()) {
+			over.put(key, m1.get(key));
+		}
+		
+		for(String key : m2.keySet()) {
+			if(!over.containsKey(key)) {
+				over.put(key, m2.get(key));
+			}
+		}
+		
+		return over;
+	}
+	
 
 }

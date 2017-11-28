@@ -28,7 +28,7 @@ public class TokenTagTest {
 		
 		assertEquals((int)mem.get("X"), 20);
 		System.out.println(inter.states);
-		assertEquals("[{}, {X=10}, {X=20}]", inter.states.toString());
+		assertEquals("[{X=10}, {X=20}]", inter.states.toString());
 	}
 	
 	@Test
@@ -53,7 +53,7 @@ public class TokenTagTest {
 		Map<String, Integer> mem = inter.execute();
 		
 //		System.out.println(mem);
-		assertEquals("[{}, {X=10}, {X=320}]", inter.states.toString());
+		assertEquals("[{X=10}, {X=320}]", inter.states.toString());
 		System.out.println(inter.states);
 		assertEquals((int)mem.get("X"), 320);
 	}
@@ -76,7 +76,7 @@ public class TokenTagTest {
 		Map<String, Integer> mem = inter.execute();
 		
 //		System.out.println(mem);
-		assertEquals(inter.states.toString(), "[{}, {X=10}, {X=5}]");
+		assertEquals(inter.states.toString(), "[{X=10}, {X=5}]");
 		System.out.println(inter.states);
 		assertEquals((int)mem.get("X"), 5);
 	}
