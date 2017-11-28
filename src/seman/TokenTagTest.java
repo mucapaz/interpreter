@@ -332,7 +332,8 @@ public class TokenTagTest {
 		
 		Map<String, Integer> mem = inter.execute();
 		
-//		System.out.println(mem);
+		
+		System.out.println(mem);
 		System.out.println(inter.states);
 		assertEquals((int)mem.get("X"), 210);
 	}
@@ -362,4 +363,58 @@ public class TokenTagTest {
 		assertEquals((int)mem.get("X"), 10);
 	}
 
+	@Test
+	public void testBeginEnd3() throws Exception {
+		
+		String code = "BEGIN\n" +
+					"VAR X 10\n" +
+					"BEGIN\n" +
+					"BEGIN\n" +
+					"VAR Y 100\n"+
+					"VAR X 200\n"+
+					"X = X + Y\n"+
+					"END\n"+
+					"END\n"+
+					"END\n";
+		
+		code = code.replaceAll("\n", " ");
+		
+		List<Token> list = Parser.tokenize(code);
+
+		Interpreter inter = new Interpreter(list);
+		
+		Map<String, Integer> mem = inter.execute();
+		
+//		System.out.println(mem);
+		System.out.println(inter.states);
+		assertEquals((int)mem.get("X"), 10);
+	}
+	
+	@Test
+	public void testBeginEnd4() throws Exception {
+		
+		String code = "BEGIN\n" +
+					"VAR X 10\n" +
+					"BEGIN\n" +
+					"BEGIN\n" +
+					"VAR Y 200\n"+
+					"X = X + Y\n"+ 
+					"END\n"+
+					"END\n"+
+					"END\n";
+		
+		code = code.replaceAll("\n", " ");
+		
+		List<Token> list = Parser.tokenize(code);
+
+		Interpreter inter = new Interpreter(list);
+		
+		Map<String, Integer> mem = inter.execute();
+		
+		
+		System.out.println(mem);
+		System.out.println(inter.states);
+		assertEquals((int)mem.get("X"), 210);
+	}
+	
 }

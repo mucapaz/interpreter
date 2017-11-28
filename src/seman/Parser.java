@@ -52,6 +52,16 @@ public class Parser {
 				}
 
 				break;
+			case "PROC":
+				term = terms[++x];
+				tokens.add(new Token(TokenTag.PROC, term));
+				
+				break;
+			case "CALL":
+				term = terms[++x];
+				tokens.add(new Token(TokenTag.CALL, term));
+				
+				break;
 			case "IF":
 				tokens.add(new Token(TokenTag.IF));
 

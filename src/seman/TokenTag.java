@@ -18,5 +18,7 @@ public enum TokenTag {
 	SUB,
 	MUL,
 	DIV,
+	PROC,
+	CALL
 	
 }
