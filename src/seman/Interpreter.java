@@ -39,17 +39,20 @@ public class Interpreter {
 		List<Map> mems = new ArrayList();
 		mems.add(new HashMap<String, Integer>());
 
-		return begin(token,mems);
+		List<Map> procs = new ArrayList();
+		procs.add(new HashMap<String, Procedure>());
+		
+		return begin(token,mems, procs);
 	}
 
-	public List<Map> execute(List<Map> mems) throws Exception{
+	public List<Map> execute(List<Map> mems, List<Map> procs) throws Exception{
 
 
 		Token token = tokens.get(index);
-		return begin(token, mems);
+		return begin(token, mems, procs);
 	}
 
-	private List<Map> begin(Token token, List<Map> mems) throws Exception{
+	private List<Map> begin(Token token, List<Map> mems, List<Map> procs) throws Exception{
 
 
 		if(token.tag != TokenTag.BEGIN) {
@@ -58,10 +61,12 @@ public class Interpreter {
 
 			//			states.add(mem.toString());
 
+			int aux = 1;
+			
 			while(true) {
 				index++;
 				Token t = tokens.get(index);
-
+				
 				if(t.tag == TokenTag.END) {
 					break;
 				}else if(t.tag == TokenTag.BEGIN) {
@@ -69,10 +74,15 @@ public class Interpreter {
 					List memsAux = copy(mems);
 					memsAux.add(0, new HashMap<String, Integer>());
 
-					begin(t, memsAux);
+					List procsAux = copy(procs);
+					procsAux.add(0, new HashMap<String, Integer>());
+					
+					begin(t, memsAux, procsAux);
 
 				}else {
-					callFunc(t, mems);
+					
+					
+					callFunc(t, mems, procs);
 				}
 			}			
 		}
@@ -83,29 +93,25 @@ public class Interpreter {
 
 
 
-	private void callFunc(Token t, List<Map> mems) throws Exception {
+	private void callFunc(Token t, List<Map> mems, List<Map> procs) throws Exception {
 
 		//		states.add(mem);
 
 		TokenTag tag = t.tag;
-
+		
 		if(tag == TokenTag.VAR) {
 			var(t, mems);
 
 			states.add(overlay(mems).toString());
 
 		}else if(tag == TokenTag.IF) {
-			conditional(t, mems);
-		}
-		
-//		else if(tag == TokenTag.PROC) {
-//			proc(t, mem, parentsMem);
-//		}else if(tag == TokenTag.CALL) {
-//			call(t, mem,parentsMem);		
-//		}
-//		
-		else if(tag == TokenTag.WHILE) {
-			loopWhile(t, mems);
+			conditional(t, mems, procs);
+		}else if(tag == TokenTag.PROC) {
+			proc(t, mems, procs);
+		}else if(tag == TokenTag.CALL) {
+			call(t, procs);		
+		}else if(tag == TokenTag.WHILE) {
+			loopWhile(t, mems, procs);
 		}else if(tag == TokenTag.EXP) {
 			exp(t, mems);
 			states.add(overlay(mems).toString());
@@ -185,44 +191,66 @@ public class Interpreter {
 
 	}
 
-//	private void proc(Token t, Map mem, List parentsMem) {
-//		List<Token> inner = new ArrayList<Token>();
-//		int aux = 1;
-//
-//		while(true) {
-//			index++;
-//			t = tokens.get(index);
-//
-//			if(t.tag == TokenTag.END) {
-//				aux--;
-//				if(aux == 0) {
-//					break;
-//				}else {
-//					inner.add(t);
-//				}
-//			}else {
-//				inner.add(t);
-//
-//				if(commandWithEnd(t.tag)) {
-//					aux++;
-//				}
-//			}
-//		}
-//
-//		inner.add(0, new Token(TokenTag.BEGIN));
-//		inner.add(inner.size(), new Token(TokenTag.END));
-//
-//		procs.put(t.name, inner);
-//	}
+	private void proc(Token t, List<Map> mems, List<Map> procs) throws Exception {
+		
+		List<Token> inner = new ArrayList<Token>();
+		int aux = 1;
 
-//	private void call(Token t, Map mem, Map parentMem, Map procs, Map parentProcs) throws Exception {
-//		List<Token> procedure = procFromMaps(t, procs, parentProcs);
-//
-//		Interpreter inter = new Interpreter(procedure, states);
-//		inter.execute(mem, parentMem, procs, parentProcs);
-//	}
+		while(true) {
+			index++;
+			Token nextToken = tokens.get(index);
+			
+			if(nextToken.tag == TokenTag.END) {
+				aux--;
+				if(aux == 0) {
+					break;
+				}else {
+					inner.add(nextToken);
+				}
+			}else {
+				inner.add(nextToken);
 
-	private void loopWhile(Token t, List<Map> mems) throws Exception {
+				if(commandWithEnd(nextToken.tag)) {
+					aux++;
+				}
+			}
+		}
+
+		inner.add(0, new Token(TokenTag.BEGIN));
+		inner.add(inner.size(), new Token(TokenTag.END));
+
+		
+		
+		if(procs.get(0).containsKey(t.name)) {
+			throw new Exception("procedure " + t.name + " already defined");
+		}else {
+			Procedure p = new Procedure(inner, copy(mems), copy(procs));
+			procs.get(0).put(t.name, p);
+						
+		}
+	}
+
+	private void call(Token t, List<Map> procs) throws Exception {
+		Procedure p = null;
+		
+		for(Map m : procs) {
+			if(m.containsKey(t.name)) {
+				p = (Procedure) m.get(t.name);
+				break;
+			}
+		}
+		
+		
+		if(p == null) {
+			throw new Exception("No procedure " + t.name + " found");
+		}else {
+			
+			Interpreter inter = new Interpreter(p.getTokens(), states);
+			inter.execute(p.getMems(), p.getLastProcs());	
+		}
+	}
+
+	private void loopWhile(Token t, List<Map> mems, List<Map> procs) throws Exception {
 
 		index++;		
 		Token var1 = tokens.get(index); 
@@ -263,13 +291,13 @@ public class Interpreter {
 		while(comp(valueFromToken(var1, mems), operator.tag, valueFromToken(varOrValue, mems))) {
 
 			Interpreter inter = new Interpreter(inner, states);
-			inter.execute(mems);
+			inter.execute(mems, procs);
 		}
 
 	}
 
 
-	private void conditional(Token t, List<Map> mems) throws Exception { //if
+	private void conditional(Token t, List<Map> mems, List<Map> procs) throws Exception { //if
 
 		index++;		
 		Token var1 = tokens.get(index); 
@@ -290,7 +318,7 @@ public class Interpreter {
 
 				if(t.tag == TokenTag.END) break;
 				else {
-					callFunc(t, mems);
+					callFunc(t, mems, procs);
 				}
 			}
 		}else {

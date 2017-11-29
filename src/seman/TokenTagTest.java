@@ -32,6 +32,98 @@ public class TokenTagTest {
 	}
 	
 	@Test
+	public void testProc() throws Exception {
+		String code = "BEGIN\n" +
+					"VAR X 10\n" +
+					"PROC proca\n" + 
+					"X = 20\n" +
+					"END\n"+
+					"CALL proca\n"+
+					"END\n";
+		
+		code = code.replaceAll("\n", " ");
+		
+		List<Token> list = Parser.tokenize(code);
+
+		Interpreter inter = new Interpreter(list);
+		
+		Map<String, Integer> mem = inter.execute().get(0);
+		
+		System.out.println(mem);
+		System.out.println(inter.states);
+		assertEquals((int)mem.get("X"), 20);
+
+		assertEquals("[{X=10}, {X=20}]", inter.states.toString());
+	}
+	
+	@Test
+	public void testProc2() throws Exception {
+		String code = "BEGIN\n" +
+					"VAR X 10\n" +
+					
+					"PROC proc1\n"+
+					"X = 20\n"+
+					"END\n"+
+					
+					"PROC proc2\n" + 
+					"X = 30\n" +
+					"END\n"+
+					
+					"CALL proc2\n"+
+					"END\n";
+		
+		code = code.replaceAll("\n", " ");
+		
+		List<Token> list = Parser.tokenize(code);
+
+		Interpreter inter = new Interpreter(list);
+		
+		Map<String, Integer> mem = inter.execute().get(0);
+		
+		System.out.println(mem);
+		System.out.println(inter.states);
+		
+		assertEquals(30, (int)mem.get("X"));
+
+		assertEquals("[{X=10}, {X=30}]", inter.states.toString());
+	}
+	
+	@Test
+	public void testProc3() throws Exception {
+		String code = "BEGIN\n" +
+					"VAR X 10\n" +
+					"VAR Y 100\n"+
+					
+					"PROC proc1\n"+
+					"X = 20\n"+
+					"END\n"+
+					
+					"PROC proc2\n" + 
+					"Y = 200\n" +
+					"CALL proc1\n"+
+					"END\n"+
+					
+					"CALL proc2\n"+
+					"END\n";
+		
+		code = code.replaceAll("\n", " ");
+		
+		List<Token> list = Parser.tokenize(code);
+
+		Interpreter inter = new Interpreter(list);
+		
+		Map<String, Integer> mem = inter.execute().get(0);
+		
+		System.out.println(mem);
+		System.out.println(inter.states);
+		
+		assertEquals(20, (int)mem.get("X"));
+		assertEquals(200, (int)mem.get("Y"));
+
+		assertEquals("[{X=10}, {X=10, Y=100}, {X=10, Y=200}, {X=20, Y=200}]", inter.states.toString());
+	}
+	
+	@Test
 	public void testIfSum() throws Exception {
 		String code = "BEGIN\n" +
 					"VAR X 10\n" +
