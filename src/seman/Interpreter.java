@@ -30,27 +30,26 @@ public class Interpreter {
 	//	}
 
 
-	public Map<String, Integer> execute() throws Exception{
+	public List<Map> execute() throws Exception{
 		Token token = tokens.get(index);
 
-		Map<String, Integer> mem = new HashMap<String, Integer>();
+//		Map<String, Integer> mem = new HashMap<String, Integer>();
 		//		Map<String, Integer> parentMem = new HashMap<String, Integer>();
 
-		List<Map> parentsMem = new ArrayList();
-		parentsMem.add(new HashMap<String, Integer>());
+		List<Map> mems = new ArrayList();
+		mems.add(new HashMap<String, Integer>());
 
-		return begin(token,mem, parentsMem);
+		return begin(token,mems);
 	}
 
-	public Map<String, Integer> execute(Map mem, List<Map> parentsMem) throws Exception{
+	public List<Map> execute(List<Map> mems) throws Exception{
 
 
 		Token token = tokens.get(index);
-		return begin(token, mem, parentsMem);
+		return begin(token, mems);
 	}
 
-	private Map<String, Integer> begin(Token token, Map mem,
-			List<Map> parentsMem) throws Exception{
+	private List<Map> begin(Token token, List<Map> mems) throws Exception{
 
 
 		if(token.tag != TokenTag.BEGIN) {
@@ -67,36 +66,36 @@ public class Interpreter {
 					break;
 				}else if(t.tag == TokenTag.BEGIN) {
 
-					List memsAux = clone(parentsMem);
-					memsAux.add(0, mem);
+					List memsAux = copy(mems);
+					memsAux.add(0, new HashMap<String, Integer>());
 
-					begin(t, new HashMap<String, Integer>(), memsAux);
+					begin(t, memsAux);
 
 				}else {
-					callFunc(t, mem, parentsMem);
+					callFunc(t, mems);
 				}
 			}			
 		}
 
-		return mem;
+		return mems;
 	}
 
 
 
 
-	private void callFunc(Token t, Map mem, List<Map> parentsMem) throws Exception {
+	private void callFunc(Token t, List<Map> mems) throws Exception {
 
 		//		states.add(mem);
 
 		TokenTag tag = t.tag;
 
 		if(tag == TokenTag.VAR) {
-			var(t, mem);
+			var(t, mems);
 
-			states.add(overlay(mem, parentsMem).toString());
+			states.add(overlay(mems).toString());
 
 		}else if(tag == TokenTag.IF) {
-			conditional(t, mem, parentsMem);
+			conditional(t, mems);
 		}
 		
 //		else if(tag == TokenTag.PROC) {
@@ -106,17 +105,17 @@ public class Interpreter {
 //		}
 //		
 		else if(tag == TokenTag.WHILE) {
-			loopWhile(t, mem, parentsMem);
+			loopWhile(t, mems);
 		}else if(tag == TokenTag.EXP) {
-			exp(t, mem, parentsMem);
-			states.add(overlay(mem, parentsMem).toString());
+			exp(t, mems);
+			states.add(overlay(mems).toString());
 		}else {		
 			throw new Exception("no func " +  t.tag);
 		}
 
 	}
 
-	private void exp(Token var, Map mem, List<Map> parentsMem) throws Exception { //var = varOrValue0, var = varOrValue0 + varOrValue1 + varOrValue2... 
+	private void exp(Token var, List<Map> mems) throws Exception { //var = varOrValue0, var = varOrValue0 + varOrValue1 + varOrValue2... 
 		index++;
 		Token assign = tokens.get(index);
 
@@ -127,7 +126,7 @@ public class Interpreter {
 		index++;
 		Token varOrValue0 = tokens.get(index);
 
-		int valueAux = valueFromToken(varOrValue0, mem, parentsMem);
+		int valueAux = valueFromToken(varOrValue0, mems);
 
 		while(isOperator(tokens.get(index + 1).tag)) {
 
@@ -137,37 +136,49 @@ public class Interpreter {
 			index++;
 			Token varOrValue1 = tokens.get(index);
 
-			valueAux = arithmetic(valueAux, operator.tag, valueFromToken(varOrValue1, mem, parentsMem));
+			valueAux = arithmetic(valueAux, operator.tag, valueFromToken(varOrValue1, mems));
 		}
 
-		if(mem.containsKey(var.name)) {
-			mem.put(var.name, valueAux);
-		}else {
-			boolean found = false;
+		boolean found = false;
+		
+		for(Map m : mems) {
 			
-			for(Map m : parentsMem) {
-				if(m.containsKey(var.name)) {
-					m.put(var.name, valueAux);
-					found = true;
-					break;
-				}
+			if(m.containsKey(var.name)) {
+				m.put(var.name, valueAux);
+				found = true;
+				break;
 			}
-			
-			if(!found) throw new Exception("No memory contains this var");
-			
 		}
 		
+		if(!found) throw new Exception("No memory contains this var");
+				
 	}
 
-	private void var(Token t, Map mem) throws Exception {
+	private void var(Token t, List<Map> mems) throws Exception {
 
 		index++;
 		Token next = tokens.get(index);
 
 		if(next.tag == TokenTag.VAR) {
-			mem.put(t.name, mem.get(next.name));
+			
+			int v = 0;
+			boolean found = false;
+			
+			for(Map m : mems) {
+				if(m.containsKey(next.name)) {
+					found = true;
+					v = (int) m.get(next.name);
+					break;
+				}
+			}
+			
+			if(!found) {
+				throw new Exception("no var " + next.name + " found");
+			}
+			
+			mems.get(0).put(t.name, v);		
 		}else if(next.tag == TokenTag.INTEGER){
-			mem.put(t.name, next.value);
+			mems.get(0).put(t.name, next.value);
 		}else {
 			throw new Exception("busted");
 		}
@@ -211,7 +222,7 @@ public class Interpreter {
 //		inter.execute(mem, parentMem, procs, parentProcs);
 //	}
 
-	private void loopWhile(Token t, Map mem, List<Map> parentsMem) throws Exception {
+	private void loopWhile(Token t, List<Map> mems) throws Exception {
 
 		index++;		
 		Token var1 = tokens.get(index); 
@@ -249,16 +260,16 @@ public class Interpreter {
 		inner.add(0, new Token(TokenTag.BEGIN));
 		inner.add(inner.size(), new Token(TokenTag.END));
 
-		while(comp(valueFromToken(var1, mem, parentsMem), operator.tag, valueFromToken(varOrValue, mem, parentsMem))) {
+		while(comp(valueFromToken(var1, mems), operator.tag, valueFromToken(varOrValue, mems))) {
 
 			Interpreter inter = new Interpreter(inner, states);
-			inter.execute(mem, parentsMem);
+			inter.execute(mems);
 		}
 
 	}
 
 
-	private void conditional(Token t, Map mem, List<Map> parentsMem) throws Exception { //if
+	private void conditional(Token t, List<Map> mems) throws Exception { //if
 
 		index++;		
 		Token var1 = tokens.get(index); 
@@ -269,8 +280,8 @@ public class Interpreter {
 		index++; 
 		Token varOrValue = tokens.get(index);
 
-		boolean b = comp(valueFromToken(var1, mem, parentsMem), operator.tag,
-				valueFromToken(varOrValue, mem, parentsMem));
+		boolean b = comp(valueFromToken(var1, mems), operator.tag,
+				valueFromToken(varOrValue, mems));
 
 		if(b) {
 			while(true) {
@@ -279,7 +290,7 @@ public class Interpreter {
 
 				if(t.tag == TokenTag.END) break;
 				else {
-					callFunc(t, mem, parentsMem);
+					callFunc(t, mems);
 				}
 			}
 		}else {
@@ -314,18 +325,16 @@ public class Interpreter {
 //
 //	}
 
-	private int valueFromToken(Token t, Map<String, Integer> mem, List<Map> parentsMem) throws Exception {
+	private int valueFromToken(Token t, List<Map> mems) throws Exception {
 		if(t.tag == TokenTag.VAR) {			
-
-			if(mem.containsKey(t.name)) {
-				return mem.get(t.name);
-			}
-
-			for(Map m : parentsMem) {
+			
+			for(Map m : mems) {
 				if(m.containsKey(t.name)) {
 					return (int) m.get(t.name);
 				}
 			}
+			
+			throw new Exception("no var " + t.name + " found in mems");
 
 		}else if(t.tag == TokenTag.INTEGER) {
 			return t.value;
@@ -373,12 +382,8 @@ public class Interpreter {
 
 	}
 
-	private Map overlay(Map m1, List<Map> list){
+	private Map overlay(List<Map> list){
 		Map over = new HashMap();
-
-		for(Object key : m1.keySet()) {
-			over.put(key, m1.get(key));
-		}
 
 		for(Map m2 : list) {
 			for(Object key : m2.keySet()) {
@@ -402,7 +407,7 @@ public class Interpreter {
 
 	}
 
-	public List<Map> clone(List<Map> list){
+	public List<Map> copy(List<Map> list){
 		List<Map> nlist = new ArrayList<>();
 
 		for(Map m : list) {

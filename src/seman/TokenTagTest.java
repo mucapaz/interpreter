@@ -24,7 +24,7 @@ public class TokenTagTest {
 
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 		assertEquals((int)mem.get("X"), 20);
 		System.out.println(inter.states);
@@ -50,7 +50,7 @@ public class TokenTagTest {
 		
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		assertEquals("[{X=10}, {X=320}]", inter.states.toString());
@@ -73,7 +73,7 @@ public class TokenTagTest {
 
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		assertEquals(inter.states.toString(), "[{X=10}, {X=5}]");
@@ -96,7 +96,7 @@ public class TokenTagTest {
 
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 //		assertEquals(inter.states, "[{}, {X=10}, {X=50}]");
@@ -119,7 +119,7 @@ public class TokenTagTest {
 
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		System.out.println(inter.states);
@@ -146,7 +146,7 @@ public class TokenTagTest {
 		
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 //		
 //		System.out.println(mem);
 //		
@@ -170,7 +170,7 @@ public class TokenTagTest {
 		
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		
@@ -200,7 +200,7 @@ public class TokenTagTest {
 		
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		System.out.println(inter.states);		
@@ -224,7 +224,7 @@ public class TokenTagTest {
 		
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		System.out.println(inter.states);
@@ -249,7 +249,7 @@ public class TokenTagTest {
 		
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		System.out.println(inter.states);
@@ -274,7 +274,7 @@ public class TokenTagTest {
 		
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		System.out.println(inter.states);
@@ -304,7 +304,7 @@ public class TokenTagTest {
 		
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		System.out.println("WHILE:");
@@ -330,7 +330,7 @@ public class TokenTagTest {
 
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 		
 		System.out.println(mem);
@@ -356,7 +356,7 @@ public class TokenTagTest {
 
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		System.out.println(inter.states);
@@ -383,7 +383,7 @@ public class TokenTagTest {
 
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 //		System.out.println(mem);
 		System.out.println(inter.states);
@@ -409,7 +409,7 @@ public class TokenTagTest {
 
 		Interpreter inter = new Interpreter(list);
 		
-		Map<String, Integer> mem = inter.execute();
+		Map<String, Integer> mem = inter.execute().get(0);
 		
 		
 		System.out.println(mem);
