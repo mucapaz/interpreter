@@ -156,7 +156,7 @@ public class TokenTagTest {
 	@Test
 	public void testNoProcedure() throws Exception {
 		String code = "BEGIN\n" +
-					"VAR X 10\n" +
+				"VAR X 10\n" +
 
 					"PROC proc1"+
 					"CALL proc2" +
@@ -180,18 +180,54 @@ public class TokenTagTest {
 
 		try {
 			Map<String, Integer> mem = inter.execute().get(0);
-			
+
 			fail("Exception expected");
-			
+
 		}catch(Exception e){
-			
+
 			System.out.println(e.toString());
-			
+
 		}
 
 
 	}
 
+	@Test
+	public void testFactorial() throws Exception {
+		String code = "BEGIN\n" +
+					"VAR X 5\n" +
+					"VAR RESULT 1\n" + 
+
+					"PROC fatorial\n" +
+						
+						"IF X != 1\n" +
+						"RESULT = RESULT * X\n"+
+						"X = X - 1\n"+
+						"CALL fatorial\n" +
+						"END\n"+
+					
+					"END\n"+
+
+					"CALL fatorial\n"+
+					"END\n";
+
+		code = code.replaceAll("\n", " ");
+
+		List<Token> list = Parser.tokenize(code);
+
+		Interpreter inter = new Interpreter(list);
+
+		Map<String, Integer> mem = inter.execute().get(0);
+
+		System.out.println(mem);
+		System.out.println(inter.states);
+		assertEquals((int)mem.get("RESULT"), 120);
+
+		assertEquals("[{X=5}, {X=5, RESULT=1}, {X=5, RESULT=5}, {X=4, RESULT=5},"
+				+ " {X=4, RESULT=20}, {X=3, RESULT=20}, {X=3, RESULT=60}, "
+				+ "{X=2, RESULT=60}, {X=2, RESULT=120}, {X=1, RESULT=120}]",
+				inter.states.toString());
+	}
 
 	@Test
 	public void testIfSum() throws Exception {

@@ -229,10 +229,7 @@ public class Interpreter {
 					
 			Procedure p = new Procedure(t.name, inner, copyMems(mems), procsAt);
 			
-			System.out.println(procsAt);
-			
 			procs.get(0).put(t.name, p);
-			System.out.println(procsAt);
 		}
 	}
 
