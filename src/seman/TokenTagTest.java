@@ -124,6 +124,36 @@ public class TokenTagTest {
 	}
 	
 	@Test
+	public void testProcRecursivo() throws Exception {
+		String code = "BEGIN\n" +
+					"VAR X 10\n" +
+				
+					"PROC proca\n" +
+					"X = X + 10\n" +
+					"IF X != 50\n" + 
+					"CALL proca\n" + 
+					"END\n"+
+					"END\n"+
+					
+					"CALL proca\n"+
+					"END\n";
+		
+		code = code.replaceAll("\n", " ");
+		
+		List<Token> list = Parser.tokenize(code);
+
+		Interpreter inter = new Interpreter(list);
+		
+		Map<String, Integer> mem = inter.execute().get(0);
+		
+		System.out.println(mem);
+		System.out.println(inter.states);
+		assertEquals((int)mem.get("X"), 50);
+
+		assertEquals("[{X=10}, {X=20}, {X=30}, {X=40}, {X=50}]", inter.states.toString());
+	}
+	
+	@Test
 	public void testIfSum() throws Exception {
 		String code = "BEGIN\n" +
 					"VAR X 10\n" +

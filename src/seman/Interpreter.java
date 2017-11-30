@@ -71,10 +71,10 @@ public class Interpreter {
 					break;
 				}else if(t.tag == TokenTag.BEGIN) {
 
-					List memsAux = copy(mems);
+					List memsAux = copyMems(mems);
 					memsAux.add(0, new HashMap<String, Integer>());
 
-					List procsAux = copy(procs);
+					List procsAux = copyProcs(procs);
 					procsAux.add(0, new HashMap<String, Integer>());
 					
 					begin(t, memsAux, procsAux);
@@ -224,9 +224,15 @@ public class Interpreter {
 		if(procs.get(0).containsKey(t.name)) {
 			throw new Exception("procedure " + t.name + " already defined");
 		}else {
-			Procedure p = new Procedure(inner, copy(mems), copy(procs));
+			
+			List procsAt = copyProcs(procs);
+					
+			Procedure p = new Procedure(t.name, inner, copyMems(mems), procsAt);
+			
+			System.out.println(procsAt);
+			
 			procs.get(0).put(t.name, p);
-						
+			System.out.println(procsAt);
 		}
 	}
 
@@ -435,7 +441,7 @@ public class Interpreter {
 
 	}
 
-	public List<Map> copy(List<Map> list){
+	public List<Map> copyMems(List<Map> list){
 		List<Map> nlist = new ArrayList<>();
 
 		for(Map m : list) {
@@ -443,6 +449,26 @@ public class Interpreter {
 		}
 
 		return nlist;
+	}
+	
+	public List<Map> copyProcs(List<Map> list){
+		List<Map> nlist = new ArrayList<>();
+
+		for(Map m : list) {
+			nlist.add(clone(m));
+		}
+
+		return nlist;
+	}
+	
+	public Map clone(Map m) {
+		Map ret = new HashMap<>();
+		
+		for(Object o : m.keySet()) {
+			ret.put(o, m.get(o));
+		}
+		
+		return ret;
 	}
 
 }
